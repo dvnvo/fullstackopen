@@ -4,7 +4,6 @@ import PersonForm from './components/PersonForm'
 import Filter from './components/Filter'
 
 const Persons = ({persons}) => {
-  console.log("pp", persons)
   return (
     <div>
       {persons.map(person =>
@@ -21,11 +20,9 @@ const App = () => {
   const [searchName, setSearchName] = useState('')
 
   useEffect(() => {
-    console.log('effect');
     axios
       .get('http://localhost:3001/persons')
       .then((response) => {
-        console.log('data---', response.data)
         setPersons(response.data)
       })
   }, [])
@@ -39,7 +36,6 @@ const App = () => {
     persons.forEach(element => {
       let saveName = element.name.toLowerCase().substring(0, len)
       if (name.toLowerCase() === saveName) {
-        console.log("finded", element.name)
         finded.push(element)
       }
     });

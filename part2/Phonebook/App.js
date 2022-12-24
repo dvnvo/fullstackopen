@@ -2,12 +2,43 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import PersonForm from './components/PersonForm'
 import Filter from './components/Filter'
+import personService from './services/persons'
 
-const Persons = ({persons}) => {
+const Notification = ({ message }) => {
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className='error'>
+      {message}
+    </div>
+  )
+}
+
+const Persons = ({persons, setPersons, setFindedPerson}) => {
+  const handleDelete = (id) => {
+    const deletePerson = persons.filter(p => p.id === id)
+    const name = deletePerson[0].name
+    if (window.confirm(`Delete ${name}`)) {
+      personService
+      .deletePerson(id)
+      .then(response => {
+        setPersons(persons.filter(p => p.id !== id))
+        setFindedPerson(persons.filter(p => p.id !== id))
+      })      
+    }
+  }
+
   return (
     <div>
       {persons.map(person =>
-        <div key={person.name}>{person.name} {person.number}</div>
+        <div key={person.id}>
+          <div key={person.name}>
+            {person.name} {person.number}
+            <button onClick={() => handleDelete(person.id)}>delete</button>
+          </div>
+        </div>
       )}
     </div>
   )
@@ -18,19 +49,21 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [searchName, setSearchName] = useState('')
+  const [findedPerson, setFindedPerson] = useState([])
+  const [errorMessage, setErrorMessage] = useState('')
+
 
   useEffect(() => {
     axios
       .get('http://localhost:3001/persons')
       .then((response) => {
-        setPersons(response.data)
+        const personList = response.data
+        setPersons(personList)
+        setFindedPerson(personList)
       })
   }, [])
 
   const findByName = (name) => {
-    if (name === '') {
-      return persons
-    }
     let len = name.length
     let finded = []
     persons.forEach(element => {
@@ -45,14 +78,16 @@ const App = () => {
   const handleSearchChange = (event) => {
     let n = event.target.value
     setSearchName(n)
-    findByName(n)
+    const finded = n ? findByName(n) : persons
+    setFindedPerson(finded)
   }
 
-  const findedPerson = findByName(searchName)
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={errorMessage} />
+
       <Filter 
         searchName={searchName}
         handleSearchChange={handleSearchChange}
@@ -66,10 +101,16 @@ const App = () => {
         setNewName={setNewName}
         setNewNumber={setNewNumber}
         setPersons={setPersons}
+        setFindedPerson={setFindedPerson}
+        setErrorMessage={setErrorMessage}
       />
 
       <h2>Numbers</h2>
-      <Persons persons={findedPerson}/>
+      <Persons 
+        persons={findedPerson}
+        setPersons={setPersons}
+        setFindedPerson={setFindedPerson}
+      />
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import React from 'react'
+import personService from '../services/persons'
 
 const PersonForm = (props) => {
   const {
@@ -8,10 +9,11 @@ const PersonForm = (props) => {
     setNewName,
     setNewNumber,
     setPersons,
+    setFindedPerson,
+    setErrorMessage,
   } = props
 
   const equalSavedName = (name) => {
-    console.log("equal", name)
     persons.forEach(element => {
       if (name === element.name) {
         let m = `${name} is already added to phonebook`
@@ -19,16 +21,62 @@ const PersonForm = (props) => {
       }
     });
   }
+
+  const updatePerson = (id, person) => {
+    const name = person.name
+    const msg = `${name} is already added to phonebook, replace the old number  with a new one?`
+    if (window.confirm(msg)) {
+      personService
+        .update(id, person)
+        .then(returnNewPerson => {
+          const newPersons = persons.map(p => p.id !== id ? p : returnNewPerson)
+          setFindedPerson(newPersons)
+        })
+        .then(() => {
+          setErrorMessage(`Updated ${name}`)
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 3000)
+  
+        })
+        .catch((error) => {
+          setErrorMessage(
+            `In formation of ${name} has already been removed from server`
+          )
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 5000)
+        })
+    }
+  }
+
   const addPerson = (event) => {
     event.preventDefault()
-    console.log('button clicked', event.target)
-    const person = {
+    const newPerson = {
       name: newName,
       number: newNumber
     }
-    setPersons(persons.concat(person))
-    setNewName('')
-    setNewNumber('')
+    const newInPersons = persons.find(p => p.name === newName)
+    if (newInPersons) {
+      updatePerson(newInPersons.id, newPerson)
+    } else {
+      personService
+        .create(newPerson)
+        .then(returnPerson => {
+          const newPersons = persons.concat(returnPerson)
+          setPersons(newPersons)
+          setFindedPerson(newPersons)
+          setNewName('')
+          setNewNumber('')
+        })
+        .then(() => {
+          setErrorMessage(`Added ${newName}`)
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 3000)
+  
+        })
+    }
   }
 
   const handleNameChange = (event) => {

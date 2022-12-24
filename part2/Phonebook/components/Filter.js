@@ -10,8 +10,8 @@ const Filter = (props) => {
     <div>
     <div>filter shown with</div>
     <input
-    value={searchName}
-    onChange={handleSearchChange}
+      value={searchName}
+      onChange={handleSearchChange}
     />
     </div>
   )

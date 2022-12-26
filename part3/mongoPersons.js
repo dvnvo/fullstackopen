@@ -36,7 +36,7 @@ app.get('/api/persons/info', (request, response) => {
         <div>Phonebook has info for ${sum} peoples</div>
         <div>${time}</div>
       `
-      response.send(msg)  
+      response.send(msg)
     })
 })
 
@@ -68,7 +68,7 @@ app.put('/api/persons/:id', (request, response, next) => {
 app.delete('/api/persons/:id', (request, response, next) => {
   // const id = Number(request.params.id)
   Person.findByIdAndRemove(request.params.id)
-    .then(result => {
+    .then(() => {
       response.status(204).end()
     })
     .catch(error => next(error))
